@@ -331,33 +331,8 @@ async function seedBlogsIfEmpty(strapi) {
 }
 
 module.exports = {
-  register({ strapi }) {
-    // Reverse proxies (Nginx/Cloudflare) terminate SSL; Strapi may see HTTP.
-    // Ensure request is treated as secure so admin auth cookies can be set.
-    if (process.env.NODE_ENV === 'production') {
-      strapi.server.use(async (ctx, next) => {
-        const xForwardedProto = String(ctx.get('x-forwarded-proto') || '').toLowerCase();
-        const xForwardedScheme = String(ctx.get('x-forwarded-scheme') || '').toLowerCase();
-        const xForwardedSsl = String(ctx.get('x-forwarded-ssl') || '').toLowerCase();
-        const xForwardedPort = String(ctx.get('x-forwarded-port') || '').toLowerCase();
-        const cfVisitor = String(ctx.get('cf-visitor') || '').toLowerCase();
-
-        const isHttpsViaProxy = (
-          xForwardedProto === 'https'
-          || xForwardedScheme === 'https'
-          || xForwardedSsl === 'on'
-          || xForwardedPort === '443'
-          || cfVisitor.includes('"scheme":"https"')
-        );
-
-        if (isHttpsViaProxy && ctx.req?.socket) {
-          ctx.req.socket.encrypted = true;
-        }
-
-        await next();
-      });
-    }
-  },
+  // Same as working FXtradehunt project: no custom proxy/cookie middleware.
+  register() {},
 
   async bootstrap({ strapi }) {
     try {
