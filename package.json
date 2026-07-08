@@ -18,13 +18,12 @@
     "upgrade:dry": "npx @strapi/upgrade latest --dry"
   },
   "dependencies": {
-    "@strapi/plugin-users-permissions": "5.12.6",
-    "@strapi/provider-upload-cloudinary": "^5.48.1",
-    "@strapi/strapi": "5.12.6",
-    "better-sqlite3": "11.3.0",
+    "@strapi/plugin-users-permissions": "5.47.0",
+    "@strapi/provider-upload-cloudinary": "5.47.0",
+    "@strapi/strapi": "5.47.0",
     "cheerio": "^1.2.0",
     "dotenv": "^17.4.2",
-    "pg": "^8.22.0",
+    "pg": "8.20.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.0.0",
@@ -32,7 +31,7 @@
   },
   "devDependencies": {},
   "engines": {
-    "node": ">=18.0.0 <=22.x.x",
+    "node": ">=20.0.0 <=24.x.x",
     "npm": ">=6.0.0"
   },
   "strapi": {

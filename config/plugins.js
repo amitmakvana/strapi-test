@@ -1,34 +1,34 @@
-module.exports = ({ env }) => {
-  const hasCloudinary =
-    env('CLOUDINARY_CLOUD_NAME')
-    && env('CLOUDINARY_API_KEY')
-    && env('CLOUDINARY_API_SECRET')
+const CMS = require('./hardcoded');
 
-  if (!hasCloudinary) return {}
-
-  return {
-    upload: {
-      config: {
-        provider: 'cloudinary',
-        providerOptions: {
-          cloud_name: env('CLOUDINARY_CLOUD_NAME'),
-          api_key: env('CLOUDINARY_API_KEY'),
-          api_secret: env('CLOUDINARY_API_SECRET'),
+module.exports = ({ env }) => ({
+  'users-permissions': {
+    config: {
+      jwtSecret: env('JWT_SECRET', CMS.jwtSecret),
+    },
+  },
+  upload: {
+    config: {
+      provider: 'cloudinary',
+      providerOptions: {
+        cloud_name: env('CLOUDINARY_CLOUD_NAME', CMS.cloudinary.cloud_name),
+        api_key: env('CLOUDINARY_API_KEY', CMS.cloudinary.api_key),
+        api_secret: env('CLOUDINARY_API_SECRET', CMS.cloudinary.api_secret),
+      },
+      actionOptions: {
+        upload: {
+          folder: env('CLOUDINARY_FOLDER', 'five-tech/blogs'),
+          quality: 'auto:good',
+          fetch_format: 'auto',
+          flags: 'progressive',
         },
-        actionOptions: {
-          upload: {
-            folder: env('CLOUDINARY_FOLDER', 'five-tech/blogs'),
-            quality: 'auto:good',
-            fetch_format: 'auto',
-          },
-          uploadStream: {
-            folder: env('CLOUDINARY_FOLDER', 'five-tech/blogs'),
-            quality: 'auto:good',
-            fetch_format: 'auto',
-          },
-          delete: {},
+        uploadStream: {
+          folder: env('CLOUDINARY_FOLDER', 'five-tech/blogs'),
+          quality: 'auto:good',
+          fetch_format: 'auto',
+          flags: 'progressive',
         },
+        delete: {},
       },
     },
-  }
-}
+  },
+});

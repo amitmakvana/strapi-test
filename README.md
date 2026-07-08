@@ -4,17 +4,18 @@ This guide explains how to run and manage this Strapi project locally and in pro
 
 ## 1) Project basics
 
-- Framework: Strapi v5
-- Package manager: `yarn`
+- Framework: Strapi v5.47
+- Package manager: `yarn` (or `npm`)
 - Default local URL: `http://localhost:1337`
 - Admin panel: `http://localhost:1337/admin`
+- Live admin: `https://strapi-test-p164.onrender.com/admin`
 - Main content collection: `blog`
 
 ## 2) Requirements
 
 - Node.js `>=20 <=24`
 - Yarn installed
-- Network access to PostgreSQL (Supabase in current config)
+- Network access to PostgreSQL (Supabase pooler)
 
 Check versions:
 
@@ -45,25 +46,30 @@ Useful scripts:
 - `yarn develop` -> run dev server
 - `yarn build` -> build admin + backend
 - `yarn start` -> run production server
-- `yarn migrate:from-cloud` -> migrate content from old Strapi Cloud
+- `yarn migrate:from-cloud` -> migrate content from source Strapi
+- `yarn scrape:live` / `yarn sync:live` / `yarn sync:recovered` / `yarn import:covers`
 
 ## 4) Configuration model in this project
 
-This repository is configured to read most values from:
+This repository reads defaults from:
 
-- `config/hardcoded.ts`
+- `config/hardcoded.js`
 
-And fallback/override via env-aware config files:
+And env-aware overrides from:
 
-- `config/server.ts`
-- `config/admin.ts`
-- `config/database.ts`
-- `config/plugins.ts`
+- `config/server.js`
+- `config/admin.js`
+- `config/database.js`
+- `config/plugins.js`
+- `config/middlewares.js`
 
 Important:
 
-- Current project is not `.env`-first. It uses hardcoded config values.
-- For better security across environments, move secrets to environment variables before reusing in other projects.
+- Same pattern as the working FXtradehunt project (hardcoded fallbacks + env override).
+- Auth uses default `strapi::session` (no forced secure-cookie hacks).
+- `PUBLIC_URL` must match the exact browser domain.
+- Do not set `STRAPI_ADMIN_BACKEND_URL`.
+- No Docker required.
 
 ## 5) How to add/manage content in Strapi
 
@@ -119,75 +125,38 @@ Important:
 2. For `Public`/`Authenticated`, allow only required actions (`find`, `findOne`, etc.).
 3. Keep create/update/delete disabled for public APIs unless absolutely required.
 
-## 8) Migration in this project (Strapi Cloud -> this instance)
+## 8) Migration in this project
 
-This repo includes a migration script:
+This repo includes:
 
 - `scripts/migrate-from-cloud.mjs`
-
-It migrates `blog` entries from old cloud instance to target Strapi, including media upload and publish.
-
-### Run migration
 
 PowerShell:
 
 ```powershell
+$env:STRAPI_SOURCE_URL="https://source-strapi-url"
 $env:STRAPI_TARGET_URL="http://localhost:1337"
 $env:STRAPI_TARGET_TOKEN="paste_full_access_token_here"
 yarn migrate:from-cloud
 ```
 
-CMD:
-
-```cmd
-set STRAPI_TARGET_URL=http://localhost:1337
-set STRAPI_TARGET_TOKEN=paste_full_access_token_here
-yarn migrate:from-cloud
-```
-
-### Migration behavior summary
-
-- Pulls published blogs from source cloud.
-- Uploads cover/meta images to target `/api/upload`.
-- Upserts by `slug` (update if slug exists, create if missing).
-- Publishes migrated entries on target.
-
-### Safe migration checklist
-
-1. Backup target database.
-2. Validate API token has needed scope.
-3. Run migration in staging first.
-4. Verify:
-   - post count
-   - slug uniqueness
-   - image links
-   - published status
-
 ## 9) Cookies and session management
 
-Session middleware is enabled in:
+Session middleware:
 
-- `config/middlewares.ts` via `strapi::session`
+- `config/middlewares.js` -> `strapi::session` (default, same as working project)
 
-Session and cookie signing are tied to app keys in:
+App keys:
 
-- `config/server.ts` -> `app.keys`
+- `config/server.js` -> `app.keys` from `APP_KEYS` / `hardcoded.js`
 
-### What this means
+Important:
 
-- Strapi signs cookies/sessions using `APP_KEYS` (or hardcoded fallback in current project).
-- Changing app keys invalidates existing signed cookies/sessions.
-- Keep keys stable per environment unless you intentionally want forced logout.
-
-### Recommended practices
-
-- Store `APP_KEYS` as env vars per environment.
-- Rotate keys in a planned window (expect admin logout/session reset).
-- Use HTTPS in production so secure cookie behavior is reliable behind your reverse proxy.
+- Keep `APP_KEYS` stable per environment.
+- Changing keys logs everyone out.
+- `PUBLIC_URL` must equal live domain exactly.
 
 ## 10) Strapi upgrade and schema change notes
-
-### Upgrade Strapi
 
 ```bash
 yarn upgrade:dry
@@ -201,17 +170,7 @@ After upgrade:
 3. Test blog CRUD and publish flow.
 4. Test frontend API responses.
 
-### Schema/content model changes
-
-When adding/removing fields:
-
-- Update frontend queries and UI mapping.
-- Re-check permissions for new fields/content types.
-- Re-run migration or backfill script if old data needs new fields.
-
 ## 11) Production run (without Docker)
-
-Typical production flow:
 
 ```bash
 yarn install
@@ -219,45 +178,35 @@ yarn build
 yarn start
 ```
 
-Minimum production env variables (recommended):
+Render/PM2 set:
 
 - `NODE_ENV=production`
-- `HOST`
-- `PORT`
-- `PUBLIC_URL`
-- `APP_KEYS`
-- `ADMIN_JWT_SECRET`
-- `API_TOKEN_SALT`
-- `TRANSFER_TOKEN_SALT`
-- `ENCRYPTION_KEY`
-- Database credentials
-- Cloudinary credentials
+- `PUBLIC_URL=https://strapi-test-p164.onrender.com`
+- secrets (`APP_KEYS`, JWT, DB, Cloudinary)
+- Do not set `STRAPI_ADMIN_BACKEND_URL`
 
 ## 12) Common issues and fixes
 
-### SSL/self-signed certificate issue (Supabase)
+### Admin login loops back to login
 
-- Check `config/database.ts` SSL settings.
-- Current config supports `sslRejectUnauthorized: false` for dev compatibility.
+1. `PUBLIC_URL` must match browser URL exactly.
+2. Keep `APP_KEYS` / `ADMIN_JWT_SECRET` stable.
+3. Rebuild (`yarn build`) and restart.
+4. Clear site cookies / use Incognito.
 
-### Database authentication failed
+### Database max clients (`EMAXCONNSESSION`)
 
-- Re-check DB username/password and host/port in config.
+- Prefer Supabase pooler port `6543` (transaction mode), same as working project.
+- Keep pool max modest.
 
 ### API returns empty for public users
 
-- Enable permissions for required role/actions in Users & Permissions settings.
+- Enable `find` / `findOne` for Public role.
+- Confirm entry is published.
 
-### Content not visible on website
+## 13) Security cleanup recommended before reuse
 
-- Confirm entry is **published**.
-- Confirm frontend points to correct Strapi URL and valid token.
-
-## 13) Security cleanup recommended before reuse in other projects
-
-Before using this setup in another project:
-
-1. Move all secrets out of `config/hardcoded.ts`.
-2. Rotate exposed secrets (DB, Cloudinary, JWT, salts, keys).
-3. Keep only non-sensitive defaults in code.
-4. Use environment-specific secret management.
+1. Rotate secrets if exposed.
+2. Prefer env secrets on live host.
+3. Keep only non-sensitive defaults in code if needed.
+4. Never commit real production passwords to public repos.
