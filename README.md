@@ -149,6 +149,13 @@ GET /api/blogs/:id      → single blog
 | Admin login loops on live | Run `./deploy/build-live.sh`, restart PM2, and clear `blog.fivetecglobalcapital.com` cookies |
 | CORS error on live | Set `FRONTEND_URL` in `.env` |
 
+Live login loop checklist (must all be true):
+- `APP_KEYS` exists and has 4 comma-separated values in server env.
+- `ADMIN_JWT_SECRET` and `JWT_SECRET` are set and do not change between deploys.
+- `PUBLIC_URL` is exactly `https://blog.fivetecglobalcapital.com` (no trailing slash).
+- `STRAPI_ADMIN_BACKEND_URL` is unset in hosting dashboard.
+- After env/config changes: run build and restart process manager.
+
 ---
 
 ## Project structure
