@@ -4,7 +4,7 @@ module.exports = ({ env }) => {
       secret: env('ADMIN_JWT_SECRET'),
     },
     rateLimit: {
-      enabled: env.bool('ADMIN_RATE_LIMIT_ENABLED', true),
+      enabled: env.bool('ADMIN_RATE_LIMIT_ENABLED', false),
       interval: { min: env.int('ADMIN_RATE_LIMIT_INTERVAL_MIN', 5) },
       max: env.int('ADMIN_RATE_LIMIT_MAX', 50),
       delayAfter: env.int('ADMIN_RATE_LIMIT_DELAY_AFTER', 20),
