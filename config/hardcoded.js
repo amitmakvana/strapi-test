@@ -5,7 +5,7 @@
 module.exports = {
   host: '0.0.0.0',
   port: 1337,
-  publicUrl: 'https://strapi-test-p164.onrender.com',
+  publicUrl: 'https://blog.fivetecglobalcapital.com',
   appKeys: [
     '2fK9vLmP0qR7sT4uV6wX8yZ=',
     'aBcDeFgHiJkLmNoPqRsTuVw=',

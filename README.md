@@ -8,7 +8,7 @@ This guide explains how to run and manage this Strapi project locally and in pro
 - Package manager: `yarn` (or `npm`)
 - Default local URL: `http://localhost:1337`
 - Admin panel: `http://localhost:1337/admin`
-- Live admin: `https://strapi-test-p164.onrender.com/admin`
+- Live admin: `https://blog.fivetecglobalcapital.com/admin`
 - Main content collection: `blog`
 
 ## 2) Requirements
@@ -181,7 +181,7 @@ yarn start
 Render/PM2 set:
 
 - `NODE_ENV=production`
-- `PUBLIC_URL=https://strapi-test-p164.onrender.com`
+- `PUBLIC_URL=https://blog.fivetecglobalcapital.com`
 - secrets (`APP_KEYS`, JWT, DB, Cloudinary)
 - Do not set `STRAPI_ADMIN_BACKEND_URL`
 

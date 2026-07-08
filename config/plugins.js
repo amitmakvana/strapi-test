@@ -15,17 +15,12 @@ module.exports = ({ env }) => ({
         api_secret: env('CLOUDINARY_API_SECRET', CMS.cloudinary.api_secret),
       },
       actionOptions: {
+        // Keep originals so admin media library can preview reliably.
         upload: {
           folder: env('CLOUDINARY_FOLDER', 'five-tech/blogs'),
-          quality: 'auto:good',
-          fetch_format: 'auto',
-          flags: 'progressive',
         },
         uploadStream: {
           folder: env('CLOUDINARY_FOLDER', 'five-tech/blogs'),
-          quality: 'auto:good',
-          fetch_format: 'auto',
-          flags: 'progressive',
         },
         delete: {},
       },
