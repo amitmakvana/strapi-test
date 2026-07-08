@@ -1,181 +1,263 @@
-# Five-Tec Strapi Backend
+# Strapi Project Guide (No Docker)
 
-Blog CMS for [Five-Tec Global Capital](https://www.fivetecglobalcapital.com).
+This guide explains how to run and manage this Strapi project locally and in production without Docker.
 
-| Environment | Admin URL |
-|-------------|-----------|
-| **Local** | http://localhost:1337/admin |
-| **Live** | https://blog.fivetecglobalcapital.com/admin |
+## 1) Project basics
 
----
+- Framework: Strapi v5
+- Package manager: `yarn`
+- Default local URL: `http://localhost:1337`
+- Admin panel: `http://localhost:1337/admin`
+- Main content collection: `blog`
 
-## What is set up
+## 2) Requirements
 
-| Item | Status |
-|------|--------|
-| Strapi 5 blog CMS | Ready |
-| Supabase PostgreSQL (cloud database) | Connected |
-| Cloudinary (blog images) | Connected |
-| 11 blogs imported | Done |
-| Auto SSL for Supabase | Handled in `config/database.js` |
-| Live blog subdomain (Strapi) | Nginx config in `deploy/nginx.example.conf` |
+- Node.js `>=20 <=24`
+- Yarn installed
+- Network access to PostgreSQL (Supabase in current config)
 
----
-
-## Local development
+Check versions:
 
 ```bash
-## in .env, keep:
-# NODE_ENV=development
-# # PUBLIC_URL=...
-yarn install    # first time only
-yarn dev
+node -v
+yarn -v
 ```
 
-Open **http://localhost:1337/admin**
+## 3) Install and run Strapi
 
-First time: create your admin account. Blogs load automatically from `data/recovered-blogs.json`.
-
----
-
-## Environment (`.env`)
-
-Everything is in **one file: `.env`**
-
-| Variable | Live value |
-|----------|------------|
-| `FRONTEND_URL` | `https://www.fivetecglobalcapital.com` |
-| `PUBLIC_URL` | `https://blog.fivetecglobalcapital.com` (server only) |
-
-**Local:** set `NODE_ENV=development` and comment out `PUBLIC_URL`. Never set `STRAPI_ADMIN_BACKEND_URL`.
-
-### Frontend website (Next.js repo)
-
-```env
-STRAPI_URL=https://blog.fivetecglobalcapital.com
-```
-
----
-
-## Database (Supabase)
-
-Project: **fivetecsocialcmsproject**  
-Region: **ap-south-1 (Mumbai)**
-
-Use the **Session pooler** from Supabase → **Connect** → **ORMs**:
-
-- Host: `aws-1-ap-south-1.pooler.supabase.com`
-- Port: `5432`
-- User: `postgres.boewqbkaqobrqqixamdn`
-- Database: `postgres`
-
-Do **not** use `db.xxx.supabase.co` on Windows — it is IPv6-only and will fail locally.
-
-If password fails: Supabase → **Settings → Database** → **Reset database password** → update `DATABASE_PASSWORD` in `.env`.
-
-SSL is automatic — no extra env vars needed.
-
----
-
-## Cloudinary (images)
-
-All blog uploads go to Cloudinary. Set the four `CLOUDINARY_*` vars in `.env`. Images are served from `res.cloudinary.com`.
-
----
-
-## Go live
-
-**Full deploy guide:** [`deploy/README.md`](deploy/README.md)
-
-### Live URLs (in `.env`)
-
-| What | URL |
-|------|-----|
-| Website | https://www.fivetecglobalcapital.com |
-| Strapi admin | https://blog.fivetecglobalcapital.com/admin |
-| Blog API | https://blog.fivetecglobalcapital.com/api/blogs |
-
-### Deploy on server
+From project root:
 
 ```bash
-./deploy/build-live.sh
-yarn start                # or: pm2 start deploy/ecosystem.config.cjs
+yarn install
+yarn develop
 ```
 
-### Frontend `.env` (Next.js)
+Then open:
 
-```env
-STRAPI_URL=https://blog.fivetecglobalcapital.com
+- Admin: `http://localhost:1337/admin`
+
+First run:
+
+- Create the admin user (email + password).
+
+Useful scripts:
+
+- `yarn develop` -> run dev server
+- `yarn build` -> build admin + backend
+- `yarn start` -> run production server
+- `yarn migrate:from-cloud` -> migrate content from old Strapi Cloud
+
+## 4) Configuration model in this project
+
+This repository is configured to read most values from:
+
+- `config/hardcoded.ts`
+
+And fallback/override via env-aware config files:
+
+- `config/server.ts`
+- `config/admin.ts`
+- `config/database.ts`
+- `config/plugins.ts`
+
+Important:
+
+- Current project is not `.env`-first. It uses hardcoded config values.
+- For better security across environments, move secrets to environment variables before reusing in other projects.
+
+## 5) How to add/manage content in Strapi
+
+### Add a new blog post
+
+1. Go to Admin -> Content Manager -> `Blog`.
+2. Click **Create new entry**.
+3. Fill required fields (title, slug, content, etc.).
+4. Click **Save**.
+5. Click **Publish** to make it live.
+
+### Edit existing post
+
+1. Open the entry in Content Manager.
+2. Update fields.
+3. Save.
+4. Publish again if needed.
+
+### Unpublish or delete
+
+- Use entry actions in the editor/list page.
+- Unpublish keeps data but removes it from published API responses.
+
+## 6) How to add new fields or new content types
+
+### Add field in existing collection type
+
+1. Admin -> Content-Type Builder.
+2. Open `Blog`.
+3. Add field (text, rich text, media, relation, etc.).
+4. Save and let Strapi restart.
+
+### Add a new collection type
+
+1. Admin -> Content-Type Builder -> **Create new collection type**.
+2. Define fields.
+3. Save/restart.
+4. Configure permissions in:
+   - Settings -> Users & Permissions Plugin -> Roles
+5. Create and publish entries from Content Manager.
+
+## 7) API token and permission setup
+
+### Create API token
+
+1. Admin -> Settings -> API Tokens.
+2. Create token (usually read-only for frontend, full-access only for migration/admin automation).
+3. Copy once and store securely.
+
+### Configure role permissions
+
+1. Admin -> Settings -> Users & Permissions Plugin -> Roles.
+2. For `Public`/`Authenticated`, allow only required actions (`find`, `findOne`, etc.).
+3. Keep create/update/delete disabled for public APIs unless absolutely required.
+
+## 8) Migration in this project (Strapi Cloud -> this instance)
+
+This repo includes a migration script:
+
+- `scripts/migrate-from-cloud.mjs`
+
+It migrates `blog` entries from old cloud instance to target Strapi, including media upload and publish.
+
+### Run migration
+
+PowerShell:
+
+```powershell
+$env:STRAPI_TARGET_URL="http://localhost:1337"
+$env:STRAPI_TARGET_TOKEN="paste_full_access_token_here"
+yarn migrate:from-cloud
 ```
 
-### Nginx
+CMD:
 
-Use `deploy/nginx.example.conf` — proxies `blog.fivetecglobalcapital.com` to Strapi (1337).
-
----
-
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `yarn dev` | Start Strapi (development) |
-| `yarn build` | Build admin panel (required before live) |
-| `yarn start` | Start Strapi (production) |
-| `yarn sync:recovered` | Re-import blogs from `data/recovered-blogs.json` |
-| `yarn scrape:live` | Import blogs from live website |
-| `yarn import:covers` | Import cover images (needs `STRAPI_LOCAL_TOKEN`) |
-
----
-
-## API
-
-Public read access is enabled on bootstrap.
-
-```
-GET /api/blogs          → list all blogs
-GET /api/blogs/:id      → single blog
+```cmd
+set STRAPI_TARGET_URL=http://localhost:1337
+set STRAPI_TARGET_TOKEN=paste_full_access_token_here
+yarn migrate:from-cloud
 ```
 
----
+### Migration behavior summary
 
-## Troubleshooting
+- Pulls published blogs from source cloud.
+- Uploads cover/meta images to target `/api/upload`.
+- Upserts by `slug` (update if slug exists, create if missing).
+- Publishes migrated entries on target.
 
-| Problem | Fix |
-|---------|-----|
-| Port 1337 in use | Close other terminal, or `taskkill /F /IM node.exe` |
-| Password authentication failed | Reset Supabase password → update `.env` |
-| `ENOTFOUND db.xxx.supabase.co` | Use pooler host, not direct `db.` host |
-| Admin API error on localhost | Comment out `PUBLIC_URL` in `.env`, restart `yarn dev` |
-| Admin login loops on live | Run `./deploy/build-live.sh`, restart PM2, and clear `blog.fivetecglobalcapital.com` cookies |
-| CORS error on live | Set `FRONTEND_URL` in `.env` |
+### Safe migration checklist
 
-Live login loop checklist (must all be true):
-- `APP_KEYS` exists and has 4 comma-separated values in server env.
-- `ADMIN_JWT_SECRET` and `JWT_SECRET` are set and do not change between deploys.
-- `PUBLIC_URL` is exactly `https://blog.fivetecglobalcapital.com` (no trailing slash).
-- `STRAPI_ADMIN_BACKEND_URL` is unset in hosting dashboard.
-- After env/config changes: run build and restart process manager.
+1. Backup target database.
+2. Validate API token has needed scope.
+3. Run migration in staging first.
+4. Verify:
+   - post count
+   - slug uniqueness
+   - image links
+   - published status
 
----
+## 9) Cookies and session management
 
-## Project structure
+Session middleware is enabled in:
 
+- `config/middlewares.ts` via `strapi::session`
+
+Session and cookie signing are tied to app keys in:
+
+- `config/server.ts` -> `app.keys`
+
+### What this means
+
+- Strapi signs cookies/sessions using `APP_KEYS` (or hardcoded fallback in current project).
+- Changing app keys invalidates existing signed cookies/sessions.
+- Keep keys stable per environment unless you intentionally want forced logout.
+
+### Recommended practices
+
+- Store `APP_KEYS` as env vars per environment.
+- Rotate keys in a planned window (expect admin logout/session reset).
+- Use HTTPS in production so secure cookie behavior is reliable behind your reverse proxy.
+
+## 10) Strapi upgrade and schema change notes
+
+### Upgrade Strapi
+
+```bash
+yarn upgrade:dry
+yarn upgrade
 ```
-Five-Tech-Backend/
-├── config/              # database, server, CORS, Cloudinary
-├── src/api/blog/        # blog content type + API
-├── data/                # recovered-blogs.json (11 posts backup)
-├── scripts/             # import / sync tools
-├── deploy/              # nginx + deploy scripts
-├── .env                 # all config + secrets (one file)
-└── package.json
+
+After upgrade:
+
+1. Run `yarn develop`.
+2. Confirm admin loads.
+3. Test blog CRUD and publish flow.
+4. Test frontend API responses.
+
+### Schema/content model changes
+
+When adding/removing fields:
+
+- Update frontend queries and UI mapping.
+- Re-check permissions for new fields/content types.
+- Re-run migration or backfill script if old data needs new fields.
+
+## 11) Production run (without Docker)
+
+Typical production flow:
+
+```bash
+yarn install
+yarn build
+yarn start
 ```
 
----
+Minimum production env variables (recommended):
 
-## Summary
+- `NODE_ENV=production`
+- `HOST`
+- `PORT`
+- `PUBLIC_URL`
+- `APP_KEYS`
+- `ADMIN_JWT_SECRET`
+- `API_TOKEN_SALT`
+- `TRANSFER_TOKEN_SALT`
+- `ENCRYPTION_KEY`
+- Database credentials
+- Cloudinary credentials
 
-**Local:** `yarn dev` → http://localhost:1337/admin  
-**Live:** Nginx + `PUBLIC_URL` → https://blog.fivetecglobalcapital.com/admin  
-**Database:** Supabase (pooler) — same DB for local and live  
-**Images:** Cloudinary
+## 12) Common issues and fixes
+
+### SSL/self-signed certificate issue (Supabase)
+
+- Check `config/database.ts` SSL settings.
+- Current config supports `sslRejectUnauthorized: false` for dev compatibility.
+
+### Database authentication failed
+
+- Re-check DB username/password and host/port in config.
+
+### API returns empty for public users
+
+- Enable permissions for required role/actions in Users & Permissions settings.
+
+### Content not visible on website
+
+- Confirm entry is **published**.
+- Confirm frontend points to correct Strapi URL and valid token.
+
+## 13) Security cleanup recommended before reuse in other projects
+
+Before using this setup in another project:
+
+1. Move all secrets out of `config/hardcoded.ts`.
+2. Rotate exposed secrets (DB, Cloudinary, JWT, salts, keys).
+3. Keep only non-sensitive defaults in code.
+4. Use environment-specific secret management.

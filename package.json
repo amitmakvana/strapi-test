@@ -13,6 +13,7 @@
     "sync:live": "node scripts/import-from-live-site.mjs --sync",
     "sync:recovered": "node scripts/sync-recovered-to-local.mjs",
     "import:covers": "node scripts/import-cover-images.mjs",
+    "migrate:from-cloud": "node scripts/migrate-from-cloud.mjs",
     "upgrade": "npx @strapi/upgrade latest",
     "upgrade:dry": "npx @strapi/upgrade latest --dry"
   },

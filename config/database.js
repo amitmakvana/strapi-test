@@ -30,6 +30,9 @@ function sslConfig(env) {
 
 module.exports = ({ env }) => {
   const client = env('DATABASE_CLIENT', 'sqlite');
+  const supabase = isSupabase(env);
+  const defaultPoolMin = supabase ? 0 : 2;
+  const defaultPoolMax = supabase ? 5 : 10;
 
   const connections = {
     mysql: {
@@ -41,7 +44,12 @@ module.exports = ({ env }) => {
         password: env('DATABASE_PASSWORD', 'strapi'),
         ssl: sslConfig(env),
       },
-      pool: { min: env.int('DATABASE_POOL_MIN', 2), max: env.int('DATABASE_POOL_MAX', 10) },
+      pool: {
+        min: env.int('DATABASE_POOL_MIN', defaultPoolMin),
+        max: env.int('DATABASE_POOL_MAX', defaultPoolMax),
+        idleTimeoutMillis: env.int('DATABASE_POOL_IDLE_TIMEOUT', 30000),
+        acquireTimeoutMillis: env.int('DATABASE_POOL_ACQUIRE_TIMEOUT', 60000),
+      },
     },
     postgres: {
       connection: {
@@ -54,7 +62,12 @@ module.exports = ({ env }) => {
         ssl: sslConfig(env),
         schema: env('DATABASE_SCHEMA', 'public'),
       },
-      pool: { min: env.int('DATABASE_POOL_MIN', 2), max: env.int('DATABASE_POOL_MAX', 10) },
+      pool: {
+        min: env.int('DATABASE_POOL_MIN', defaultPoolMin),
+        max: env.int('DATABASE_POOL_MAX', defaultPoolMax),
+        idleTimeoutMillis: env.int('DATABASE_POOL_IDLE_TIMEOUT', 30000),
+        acquireTimeoutMillis: env.int('DATABASE_POOL_ACQUIRE_TIMEOUT', 60000),
+      },
     },
     sqlite: {
       connection: {
