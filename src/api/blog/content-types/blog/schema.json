@@ -1,0 +1,88 @@
+{
+  "kind": "collectionType",
+  "collectionName": "blogs",
+  "info": {
+    "singularName": "blog",
+    "pluralName": "blogs",
+    "displayName": "Blog",
+    "description": "Blog posts for Five-Tec website"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "excerpt": {
+      "type": "text"
+    },
+    "description": {
+      "type": "text"
+    },
+    "category": {
+      "type": "string",
+      "default": "General"
+    },
+    "date": {
+      "type": "date"
+    },
+    "author": {
+      "type": "string",
+      "default": "FiveTec Editorial Team"
+    },
+    "readTime": {
+      "type": "integer"
+    },
+    "metaTitle": {
+      "type": "string"
+    },
+    "metaDescription": {
+      "type": "text"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "metaImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "content": {
+      "type": "richtext"
+    }
+  },
+  "config": {
+    "settings": {
+      "bulkable": true,
+      "filterable": true,
+      "searchable": true,
+      "pageSize": 10,
+      "mainField": "title",
+      "defaultSortBy": "date",
+      "defaultSortOrder": "DESC"
+    },
+    "layouts": {
+      "list": ["title", "slug", "category", "date"],
+      "edit": [
+        [{ "name": "title", "size": 6 }, { "name": "slug", "size": 6 }],
+        [{ "name": "excerpt", "size": 6 }, { "name": "description", "size": 6 }],
+        [{ "name": "category", "size": 6 }, { "name": "date", "size": 6 }],
+        [{ "name": "author", "size": 12 }],
+        [{ "name": "readTime", "size": 6 }, { "name": "metaTitle", "size": 6 }],
+        [{ "name": "metaDescription", "size": 6 }, { "name": "image", "size": 6 }],
+        [{ "name": "metaImage", "size": 12 }],
+        [{ "name": "content", "size": 12 }]
+      ]
+    }
+  }
+}

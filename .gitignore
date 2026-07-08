@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Strapi runtime
+.tmp/
+.cache/
+build/
+dist/
+.strapi/
+.strapi-updater.json
+
+# Uploads (use Cloudinary in production)
+public/uploads/
+
+
+
+# Logs
+logs/
+Thumbs.db
+*.log
+
+# Local test artifacts
+admin-bundle.js
+*-headers.txt
+*-body.json
+cookies*.txt
+.tmp-*.json
