@@ -3,6 +3,14 @@ module.exports = ({ env }) => {
     auth: {
       secret: env('ADMIN_JWT_SECRET'),
     },
+    rateLimit: {
+      enabled: env.bool('ADMIN_RATE_LIMIT_ENABLED', true),
+      interval: { min: env.int('ADMIN_RATE_LIMIT_INTERVAL_MIN', 5) },
+      max: env.int('ADMIN_RATE_LIMIT_MAX', 50),
+      delayAfter: env.int('ADMIN_RATE_LIMIT_DELAY_AFTER', 20),
+      timeWait: env.int('ADMIN_RATE_LIMIT_TIME_WAIT', 3000),
+      prefixKey: env('ADMIN_RATE_LIMIT_PREFIX_KEY', 'strapi-admin'),
+    },
     apiToken: {
       salt: env('API_TOKEN_SALT'),
     },
