@@ -1,4 +1,6 @@
 module.exports = ({ env }) => {
+  const isProduction = env('NODE_ENV') === 'production';
+  const publicUrl = env('PUBLIC_URL');
   const origins = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
@@ -6,8 +8,8 @@ module.exports = ({ env }) => {
     env('FRONTEND_URL'),
   ].filter(Boolean);
 
-  if (env('NODE_ENV') === 'production' && env('PUBLIC_URL')) {
-    origins.push(env('PUBLIC_URL'));
+  if (isProduction && publicUrl) {
+    origins.push(publicUrl);
   }
 
   return [
@@ -36,7 +38,13 @@ module.exports = ({ env }) => {
     'strapi::poweredBy',
     'strapi::query',
     'strapi::body',
-    'strapi::session',
+    {
+      name: 'strapi::session',
+      config: {
+        secure: isProduction,
+        sameSite: 'lax',
+      },
+    },
     'strapi::favicon',
     'strapi::public',
   ];

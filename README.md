@@ -25,6 +25,9 @@ Blog CMS for [Five-Tec Global Capital](https://www.fivetecglobalcapital.com).
 ## Local development
 
 ```bash
+## in .env, keep:
+# NODE_ENV=development
+# # PUBLIC_URL=...
 yarn install    # first time only
 yarn dev
 ```
@@ -44,7 +47,7 @@ Everything is in **one file: `.env`**
 | `FRONTEND_URL` | `https://www.fivetecglobalcapital.com` |
 | `PUBLIC_URL` | `https://blog.fivetecglobalcapital.com` (server only) |
 
-**Local:** comment out `PUBLIC_URL`. Never set `STRAPI_ADMIN_BACKEND_URL`.
+**Local:** set `NODE_ENV=development` and comment out `PUBLIC_URL`. Never set `STRAPI_ADMIN_BACKEND_URL`.
 
 ### Frontend website (Next.js repo)
 
@@ -143,7 +146,7 @@ GET /api/blogs/:id      → single blog
 | Password authentication failed | Reset Supabase password → update `.env` |
 | `ENOTFOUND db.xxx.supabase.co` | Use pooler host, not direct `db.` host |
 | Admin API error on localhost | Comment out `PUBLIC_URL` in `.env`, restart `yarn dev` |
-| Admin login loops on live | Run `./deploy/build-live.sh` on server, clear cookies |
+| Admin login loops on live | Run `./deploy/build-live.sh`, restart PM2, and clear `blog.fivetecglobalcapital.com` cookies |
 | CORS error on live | Set `FRONTEND_URL` in `.env` |
 
 ---

@@ -1,4 +1,7 @@
 module.exports = ({ env }) => {
+  const publicUrl = env('PUBLIC_URL');
+  const isProduction = env('NODE_ENV') === 'production';
+
   const config = {
     host: env('HOST', '0.0.0.0'),
     port: env.int('PORT', 1337),
@@ -10,9 +13,10 @@ module.exports = ({ env }) => {
     },
   };
 
-  if (env('NODE_ENV') === 'production' && env('PUBLIC_URL')) {
-    config.url = env('PUBLIC_URL');
-    config.proxy = { koa: true };
+  if (isProduction && publicUrl) {
+    config.url = publicUrl;
+    // Trust X-Forwarded-* headers from reverse proxy (Nginx/Cloudflare).
+    config.proxy = true;
   }
 
   return config;

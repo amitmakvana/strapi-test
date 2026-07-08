@@ -1,4 +1,7 @@
 module.exports = ({ env }) => {
+  const publicUrl = env('PUBLIC_URL');
+  const isProduction = env('NODE_ENV') === 'production';
+
   const config = {
     auth: {
       secret: env('ADMIN_JWT_SECRET'),
@@ -17,8 +20,8 @@ module.exports = ({ env }) => {
     },
   };
 
-  if (env('NODE_ENV') === 'production' && env('PUBLIC_URL')) {
-    config.url = env('PUBLIC_URL');
+  if (isProduction && publicUrl) {
+    config.url = publicUrl;
   }
 
   return config;
